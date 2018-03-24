@@ -1,0 +1,10 @@
+kubectl apply -f galera-3-volumes.yml
+kubectl apply -f galera-3-seed.yml
+sleep 45s
+
+kubectl apply -f galera-3-nodes.yml
+sleep 30s
+
+kubectl delete -f galera-3-seed.yml
+kubectl apply -f galera-3-haproxy.yml
+kubectl apply -f galera-3-external-access.yml

@@ -10,9 +10,6 @@ spec:
       - name: {{ galera_cluster_name }}-galera-backup-volume
         persistentVolumeClaim:
           claimName: {{ galera_cluster_name }}-galera-backup-volume-claim
-      - name: {{ galera_cluster_name }}-galera-backup-temp-volume
-        persistentVolumeClaim:
-          claimName: {{ galera_cluster_name }}-galera-backup-temp-volume-claim
       - name: {{ galera_cluster_name }}-galera-seed-volume
         persistentVolumeClaim:
           claimName: {{ galera_cluster_name }}-galera-seed-volume-claim
@@ -20,6 +17,7 @@ spec:
       containers:
       - name: {{ galera_cluster_name }}-galera-backup-agent
         image: {{ galera_cluster_backup_agent_image }}
+        imagePullPolicy: Always
         args: ["restore"]
         env:
         - name: SOURCE_BACKUP
@@ -30,8 +28,6 @@ spec:
         volumeMounts:
           - name: {{ galera_cluster_name }}-galera-backup-volume
             mountPath: "/backups"
-          - name: {{ galera_cluster_name }}-galera-backup-temp-volume
-            mountPath: "/temp"
           - name: {{ galera_cluster_name }}-galera-seed-volume
             mountPath: "/target"
       restartPolicy: Never

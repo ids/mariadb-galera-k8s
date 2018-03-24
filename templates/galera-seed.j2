@@ -18,6 +18,7 @@ spec:
       containers:
       - name: {{ galera_cluster_name }}-galera-seed
         image: {{ galera_cluster_docker_image }}
+        imagePullPolicy: Always
         args: ["seed"]
         env:
         - name: XTRABACKUP_PASSWORD
@@ -39,6 +40,7 @@ spec:
           periodSeconds: 10        
         ports:
         - containerPort: 3306
+        - containerPort: 3309
         - containerPort: 4444
         - containerPort: 4567
         - containerPort: 4567
@@ -63,6 +65,9 @@ spec:
   ports:
   - port: 3306
     name: mysql
+    protocol: TCP
+  - port: 3309
+    name: socat
     protocol: TCP
   - port: 4444
     name: galera4444

@@ -18,6 +18,7 @@ spec:
       containers:
       - name: {{ galera_cluster_name }}-galera-node1
         image: {{ galera_cluster_docker_image }}
+        imagePullPolicy: Always
         args: ["node", "{{ galera_cluster_name }}-galera-seed,{{ galera_cluster_name }}-galera-node2,{{ galera_cluster_name }}-galera-node3"]
         env:
         - name: XTRABACKUP_PASSWORD
@@ -29,10 +30,11 @@ spec:
         livenessProbe:
           tcpSocket:
             port: 3306
-          initialDelaySeconds: 60
+          initialDelaySeconds: 120
           periodSeconds: 10        
         ports:
         - containerPort: 3306
+        - containerPort: 3309
         - containerPort: 4444
         - containerPort: 4567
         - containerPort: 4567
@@ -68,6 +70,7 @@ spec:
       containers:
       - name: {{ galera_cluster_name }}-galera-node2
         image: {{ galera_cluster_docker_image }}
+        imagePullPolicy: Always
         args: ["node", "{{ galera_cluster_name }}-galera-seed,{{ galera_cluster_name }}-galera-node1,{{ galera_cluster_name }}-galera-node3"]
         env:
         - name: XTRABACKUP_PASSWORD
@@ -83,6 +86,7 @@ spec:
           periodSeconds: 10        
         ports:
         - containerPort: 3306
+        - containerPort: 3309
         - containerPort: 4444
         - containerPort: 4567
         - containerPort: 4567
@@ -128,6 +132,7 @@ spec:
       containers:
       - name: {{ galera_cluster_name }}-galera-node3
         image: {{ galera_cluster_docker_image }}
+        imagePullPolicy: Always
         args: ["node", "{{ galera_cluster_name }}-galera-seed,{{ galera_cluster_name }}-galera-node1,{{ galera_cluster_name }}-galera-node2"]
         env:
         - name: XTRABACKUP_PASSWORD
@@ -139,10 +144,11 @@ spec:
         livenessProbe:
           tcpSocket:
             port: 3306
-          initialDelaySeconds: 60
+          initialDelaySeconds: 120
           periodSeconds: 10        
         ports:
         - containerPort: 3306
+        - containerPort: 3309
         - containerPort: 4444
         - containerPort: 4567
         - containerPort: 4567
@@ -158,6 +164,7 @@ spec:
 
       - name: {{ galera_cluster_name }}-galera-backup-agent
         image: {{ galera_cluster_backup_agent_image }}
+        imagePullPolicy: Always
         args: ["agent"]
         env:
         - name: PERCONA_BACKUP_HOST
@@ -188,6 +195,9 @@ spec:
   ports:
   - port: 3306
     name: mysql
+    protocol: TCP
+  - port: 3309
+    name: socat
     protocol: TCP
   - port: 4444
     name: galera4444
@@ -220,6 +230,9 @@ spec:
   - port: 3306
     name: mysql
     protocol: TCP
+  - port: 3309
+    name: socat
+    protocol: TCP
   - port: 4444
     name: galera4444
     protocol: TCP
@@ -250,6 +263,9 @@ spec:
   ports:
   - port: 3306
     name: mysql
+    protocol: TCP
+  - port: 3309
+    name: socat
     protocol: TCP
   - port: 4444
     name: galera4444

@@ -18,6 +18,7 @@ spec:
       containers:
       - name: {{ galera_cluster_name }}-galera-haproxy
         image: {{ galera_cluster_haproxy_docker_image }}
+        imagePullPolicy: Always
         env:
         - name: HAPROXY_GALERA_NODE_COUNT
           value: "3"
