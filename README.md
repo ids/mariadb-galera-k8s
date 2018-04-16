@@ -50,34 +50,34 @@ __Important__ that the VMware storage driver is __NOT__ marked as default as it 
 
 The following is an example VMware PKS __galera.conf__ file:
 
-        [all:vars]
-        galera_cluster_name=pks
-        galera_cluster_namespace=web
-        galera_cluster_docker_image=idstudios/mariadb-galera:10.3
-        galera_cluster_haproxy_docker_image=idstudios/mariadb-galera-haproxy:latest
-        galera_cluster_backup_agent_image=idstudios/xtrabackup-agent:latest
+    [all:vars]
+    galera_cluster_name=pks
+    galera_cluster_namespace=web
+    galera_cluster_docker_image=idstudios/mariadb-galera:10.3
+    galera_cluster_haproxy_docker_image=idstudios/mariadb-galera-haproxy:latest
+    galera_cluster_backup_agent_image=idstudios/xtrabackup-agent:latest
 
-        galera_target_datastore=san
-        galera_vsphere_storage_class=vmware-thin
+    galera_target_datastore=san
+    galera_vsphere_storage_class=vmware-thin
 
-        galera_cluster_volume_size=10Gi
-        galera_cluster_backup_volume_size=10Gi
-        galera_cluster_backup_nfs_server=192.168.1.107
-        galera_cluster_backup_path="/idstudios-files-galera-backups"
-        galera_cluster_backup_temp_nfs_server=192.168.1.107
-        galera_cluster_backup_temp_path="/idstudios-files-general"
-        galera_cluster_backup_retention_days=3
-        galera_cluster_backup_incremental_interval="60m"
+    galera_cluster_volume_size=10Gi
+    galera_cluster_backup_volume_size=10Gi
+    galera_cluster_backup_nfs_server=192.168.1.107
+    galera_cluster_backup_path="/idstudios-files-galera-backups"
+    galera_cluster_backup_temp_nfs_server=192.168.1.107
+    galera_cluster_backup_temp_path="/idstudios-files-general"
+    galera_cluster_backup_retention_days=3
+    galera_cluster_backup_incremental_interval="60m"
 
-        galera_xtrabackup_password=Fender2000
-        galera_mysql_user=drupal
-        galera_mysql_password=Fender2000
-        galera_mysql_root_password=Fender2000
-        galera_mysql_database=drupaldb
-        galera_cluster_backup_user=root
+    galera_xtrabackup_password=Fender2000
+    galera_mysql_user=drupal
+    galera_mysql_password=Fender2000
+    galera_mysql_root_password=Fender2000
+    galera_mysql_database=drupaldb
+    galera_cluster_backup_user=root
 
-        [template_target]
-        localhost
+    [template_target]
+    localhost
 
 ## CoreOS Tectonic
 
@@ -89,49 +89,49 @@ This configuration uses iSCSI direct access for the persistent data volumes.  It
 
 ### CoreOS Configuration File Example
 
-        [all:vars]
-        galera_cluster_name=tier1
-        galera_cluster_namespace=web
-        galera_cluster_docker_image=idstudios/mariadb-galera:10.3
-        galera_cluster_haproxy_docker_image=idstudios/mariadb-galera-haproxy:latest
-        galera_cluster_backup_agent_image=idstudios/mariadb-galera-backup:latest
-        galera_cluster_nodeport=30306
+    [all:vars]
+    galera_cluster_name=tier1
+    galera_cluster_namespace=web
+    galera_cluster_docker_image=idstudios/mariadb-galera:10.3
+    galera_cluster_haproxy_docker_image=idstudios/mariadb-galera-haproxy:latest
+    galera_cluster_backup_agent_image=idstudios/mariadb-galera-backup:latest
+    galera_cluster_nodeport=30306
 
-        galera_cluster_seed_iscsi_targetportal="192.168.100.40:3260"
-        galera_cluster_seed_iscsi_iqn="iqn.2018-04.io.idstudios:server.target0"
-        galera_cluster_seed_iscsi_lun=1
+    galera_cluster_seed_iscsi_targetportal="192.168.100.40:3260"
+    galera_cluster_seed_iscsi_iqn="iqn.2018-04.io.idstudios:server.target0"
+    galera_cluster_seed_iscsi_lun=1
 
-        galera_cluster_volume_size=50Gi
-        galera_cluster_backup_volume_size=50Gi
-        galera_cluster_backup_log_volume_size=50Gi
-        galera_cluster_backup_nfs_server=192.168.100.40
-        galera_cluster_backup_path="/data/shared/backups"
-        galera_cluster_backup_temp_nfs_server=192.168.1.107
-        galera_cluster_backup_temp_path="/idstudios-files-general"
-        galera_cluster_backup_retention_days=7
+    galera_cluster_volume_size=50Gi
+    galera_cluster_backup_volume_size=50Gi
+    galera_cluster_backup_log_volume_size=50Gi
+    galera_cluster_backup_nfs_server=192.168.100.40
+    galera_cluster_backup_path="/data/shared/backups"
+    galera_cluster_backup_temp_nfs_server=192.168.1.107
+    galera_cluster_backup_temp_path="/idstudios-files-general"
+    galera_cluster_backup_retention_days=7
 
-        galera_cluster_node1_iscsi_targetportal="192.168.100.40:3260"
-        galera_cluster_node1_iscsi_iqn="iqn.2018-04.io.idstudios:server.galera"
-        galera_cluster_node1_iscsi_lun=1
+    galera_cluster_node1_iscsi_targetportal="192.168.100.40:3260"
+    galera_cluster_node1_iscsi_iqn="iqn.2018-04.io.idstudios:server.galera"
+    galera_cluster_node1_iscsi_lun=1
 
-        galera_cluster_node2_iscsi_targetportal="192.168.100.40:3260"
-        galera_cluster_node2_iscsi_iqn="iqn.2018-04.io.idstudios:server.galera"
-        galera_cluster_node2_iscsi_lun=2
+    galera_cluster_node2_iscsi_targetportal="192.168.100.40:3260"
+    galera_cluster_node2_iscsi_iqn="iqn.2018-04.io.idstudios:server.galera"
+    galera_cluster_node2_iscsi_lun=2
 
-        galera_cluster_node3_iscsi_targetportal="192.168.100.40:3260"
-        galera_cluster_node3_iscsi_iqn="iqn.2018-04.io.idstudios:server.galera"
-        galera_cluster_node3_iscsi_lun=3
+    galera_cluster_node3_iscsi_targetportal="192.168.100.40:3260"
+    galera_cluster_node3_iscsi_iqn="iqn.2018-04.io.idstudios:server.galera"
+    galera_cluster_node3_iscsi_lun=3
 
-        galera_xtrabackup_password=Fender2000
-        galera_mysql_user=drupal
-        galera_mysql_password=Fender2000
-        galera_mysql_root_password=Fender2000
-        galera_mysql_database=drupaldb
+    galera_xtrabackup_password=Fender2000
+    galera_mysql_user=drupal
+    galera_mysql_password=Fender2000
+    galera_mysql_root_password=Fender2000
+    galera_mysql_database=drupaldb
 
-        galera_cluster_backup_user=root
+    galera_cluster_backup_user=root
 
-        [template_target]
-        localhost
+    [template_target]
+    localhost
 
 ### 3 or 5 Node Galera
 
