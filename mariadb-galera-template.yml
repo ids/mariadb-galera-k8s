@@ -73,6 +73,17 @@
       mode: 0766
     run_once: true
     become: false
+    when: galera_vsphere_storage_class is undefined 
+
+  - name: Generate the 3-Node vSphere based galera volumes manifest
+    local_action:
+      module: template
+      src: templates/3-node/galera-3-vsphere-volumes.j2
+      dest: "{{ galera_cluster_home }}/3-node/galera-3-vsphere-volumes.yml"
+      mode: 0766
+    run_once: true
+    become: false
+    when: galera_vsphere_storage_class is defined 
 
   - name: Generate the 5-Node iSCSI based galera volumes manifest
     local_action:
@@ -83,6 +94,16 @@
     run_once: true
     become: false
     when: 'galera_cluster_node4_iscsi_targetportal is defined'
+
+  - name: Generate the 5-Node vSphere based galera volumes manifest
+    local_action:
+      module: template
+      src: templates/5-node/galera-5-vsphere-volumes.j2
+      dest: "{{ galera_cluster_home }}/5-node/galera-5-vsphere-volumes.yml"
+      mode: 0766
+    run_once: true
+    become: false
+    when: galera_cluster_node4_iscsi_targetportal is defined and galera_vsphere_storage_class is defined 
 
   - name: Generate the galera 3-nodes manifest
     local_action:
@@ -160,16 +181,27 @@
     become: false
     when: 'galera_cluster_node4_iscsi_targetportal is defined'
 
-  - name: Generate the 3-node galera external access manifest
+  - name: Generate the 3-node galera external nodeport manifest
     local_action:
       module: template
-      src: templates/galera-external-access.j2
-      dest: "{{ galera_cluster_home }}/3-node/galera-3-external-access.yml"
+      src: templates/galera-external-nodeport.j2
+      dest: "{{ galera_cluster_home }}/3-node/galera-3-external-nodeport.yml"
       mode: 0766
     run_once: true
     become: false
-    
-  - name: Generate the 5-node galera external access manifest
+    when: galera_vsphere_storage_class is undefined 
+
+  - name: Generate the 3-node galera external lb manifest
+    local_action:
+      module: template
+      src: templates/galera-external-lb.j2
+      dest: "{{ galera_cluster_home }}/3-node/galera-3-external-lb.yml"
+      mode: 0766
+    run_once: true
+    become: false
+    when: galera_vsphere_storage_class is defined 
+
+  - name: Generate the 5-node galera external nodeport manifest
     local_action:
       module: template
       src: templates/galera-external-access.j2
@@ -177,7 +209,17 @@
       mode: 0766
     run_once: true
     become: false
-    when: 'galera_cluster_node4_iscsi_targetportal is defined'
+    when: 'galera_cluster_node4_iscsi_targetportal is defined and galera_vsphere_storage_class is undefined'
+
+  - name: Generate the 5-node galera external lb manifest
+    local_action:
+      module: template
+      src: templates/galera-external-lb.j2
+      dest: "{{ galera_cluster_home }}/5-node/galera-5-external-lb.yml"
+      mode: 0766
+    run_once: true
+    become: false
+    when: galera_cluster_node4_iscsi_targetportal is defined and galera_vsphere_storage_class is defined 
 
   - name: Generate the 3-Node restore to seed job manifest
     local_action:
@@ -225,6 +267,7 @@
       mode: 0766
     run_once: true
     become: false
+    when: galera_vsphere_storage_class is undefined 
 
   - name: Generate the 5-node purge volumes job manifest
     local_action:
@@ -234,8 +277,8 @@
       mode: 0766
     run_once: true
     become: false
-    when: 'galera_cluster_node4_iscsi_targetportal is defined'
-    
+    when: 'galera_cluster_node4_iscsi_targetportal is defined and galera_vsphere_storage_class is undefined'
+
   - name: Generate the 3-Node killall
     local_action:
       module: template

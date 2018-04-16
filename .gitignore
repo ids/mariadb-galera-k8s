@@ -1,5 +1,6 @@
 clusters/**
 !clusters/README.md
-!clusters/tier1-example
+!clusters/coreos-example
+!clusters/pks-example
 *.retry
 

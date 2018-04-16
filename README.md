@@ -1,16 +1,14 @@
 MariaDB Galera on Kubernetes
 ============================
 
-> Make sure to clear out the iSCSI volumes between cluster creations.  If there is existing galera data on the volumes the clusters will try to recover instead of forming new nodes. See [Purge Seed and Node Data Volumes](#purge-seed-and-node-data-volumes) on how to do this.
+This implementation has been tested in two variants:
 
-> This has been tested and developed on the __Tectonic CoreOS__ cluster from [cluster-builder](https://github.com/ids/cluster-builder).  It requires you have a working [kubectl configuration](https://coreos.com/tectonic/docs/latest/tutorials/aws/first-app.html#configuring-credentials) already in place.
+* Using iSCSI direct volumes and NFS shares in CoreOS Tectonic with Nodeport external access.
+* Using vSphere storage volumes and NFS shares in VMware PKS with dedicated external LB access.
 
-This configuration uses iSCSI direct access for the persistent data volumes.  It requires access to an iSCSI target that contains at least 4 luns: 1 for the initial seed volume which will be discarded, and 3 or 5 nodes for the permanent node volumes.
+There is also the option to enable an automated backup agent as a sidecar container, which uses an NFS share to store the backups.
 
-With the __backup agent__ enabled, it also requires two __NFS__ volumes:
-
-1. __NFS Backups__ a long term NFS storage volume for the full and incremental backups
-2. __Temp__ a scratch space in which to restore the incremental backups to a full working data directory
+With the __backup agent__ enabled, it also requires an __NFS__ volume for the backup storage.
 
 [AWS Storage Gateway](https://aws.amazon.com/storagegateway/) is a great way to deliver iSCSI and NFS storage into an ESXi environment with auto-replication to AWS storage services and management through the AWS console.  It's pretty awesome.
 
@@ -38,6 +36,103 @@ There is also two variants of deployment:
 * Without Backup Agent
 * With Integrated NFS Backup Agent
 
+## VMware PKS
+
+For VMware PKS it is important to make sure you have defined the storage class.  The examples use __vmware-thin__ (available in the __etc__ folder), but this can be adjusted in the configuration file.
+
+__Important__ that the VMware storage driver is __NOT__ marked as default as it doesn't handle NFS and iSCSI intrinsic volumes properly.  Run the following command to __unset__ the vSphere storage driver as the default:
+
+        kubectl patch storageclass vmware-thin -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"false"}}}'
+
+> This has been tested and developed on a __VMware Pivotal PKS__ cluster.  For details on configuring an NSX-T/PKS home lab [see this guide](https://github.com/ids/the-noobs-guide-to-nsxt-pks).
+
+### VMware PKS Configuration File Example
+
+The following is an example VMware PKS __galera.conf__ file:
+
+        [all:vars]
+        galera_cluster_name=pks
+        galera_cluster_namespace=web
+        galera_cluster_docker_image=idstudios/mariadb-galera:10.3
+        galera_cluster_haproxy_docker_image=idstudios/mariadb-galera-haproxy:latest
+        galera_cluster_backup_agent_image=idstudios/xtrabackup-agent:latest
+
+        galera_target_datastore=san
+        galera_vsphere_storage_class=vmware-thin
+
+        galera_cluster_volume_size=10Gi
+        galera_cluster_backup_volume_size=10Gi
+        galera_cluster_backup_nfs_server=192.168.1.107
+        galera_cluster_backup_path="/idstudios-files-galera-backups"
+        galera_cluster_backup_temp_nfs_server=192.168.1.107
+        galera_cluster_backup_temp_path="/idstudios-files-general"
+        galera_cluster_backup_retention_days=3
+        galera_cluster_backup_incremental_interval="60m"
+
+        galera_xtrabackup_password=Fender2000
+        galera_mysql_user=drupal
+        galera_mysql_password=Fender2000
+        galera_mysql_root_password=Fender2000
+        galera_mysql_database=drupaldb
+        galera_cluster_backup_user=root
+
+        [template_target]
+        localhost
+
+## CoreOS Tectonic
+
+> Make sure to clear out the iSCSI volumes between cluster creations.  If there is existing galera data on the volumes the clusters will try to recover instead of forming new nodes. See [Purge Seed and Node Data Volumes](#purge-seed-and-node-data-volumes) on how to do this.
+
+> This has been tested and developed on the __Tectonic CoreOS__ cluster from [cluster-builder](https://github.com/ids/cluster-builder).  It requires you have a working [kubectl configuration](https://coreos.com/tectonic/docs/latest/tutorials/aws/first-app.html#configuring-credentials) already in place.
+
+This configuration uses iSCSI direct access for the persistent data volumes.  It requires access to an iSCSI target that contains at least 4 luns: 1 for the initial seed volume which will be discarded, and 3 or 5 nodes for the permanent node volumes.
+
+### CoreOS Configuration File Example
+
+        [all:vars]
+        galera_cluster_name=tier1
+        galera_cluster_namespace=web
+        galera_cluster_docker_image=idstudios/mariadb-galera:10.3
+        galera_cluster_haproxy_docker_image=idstudios/mariadb-galera-haproxy:latest
+        galera_cluster_backup_agent_image=idstudios/mariadb-galera-backup:latest
+        galera_cluster_nodeport=30306
+
+        galera_cluster_seed_iscsi_targetportal="192.168.100.40:3260"
+        galera_cluster_seed_iscsi_iqn="iqn.2018-04.io.idstudios:server.target0"
+        galera_cluster_seed_iscsi_lun=1
+
+        galera_cluster_volume_size=50Gi
+        galera_cluster_backup_volume_size=50Gi
+        galera_cluster_backup_log_volume_size=50Gi
+        galera_cluster_backup_nfs_server=192.168.100.40
+        galera_cluster_backup_path="/data/shared/backups"
+        galera_cluster_backup_temp_nfs_server=192.168.1.107
+        galera_cluster_backup_temp_path="/idstudios-files-general"
+        galera_cluster_backup_retention_days=7
+
+        galera_cluster_node1_iscsi_targetportal="192.168.100.40:3260"
+        galera_cluster_node1_iscsi_iqn="iqn.2018-04.io.idstudios:server.galera"
+        galera_cluster_node1_iscsi_lun=1
+
+        galera_cluster_node2_iscsi_targetportal="192.168.100.40:3260"
+        galera_cluster_node2_iscsi_iqn="iqn.2018-04.io.idstudios:server.galera"
+        galera_cluster_node2_iscsi_lun=2
+
+        galera_cluster_node3_iscsi_targetportal="192.168.100.40:3260"
+        galera_cluster_node3_iscsi_iqn="iqn.2018-04.io.idstudios:server.galera"
+        galera_cluster_node3_iscsi_lun=3
+
+        galera_xtrabackup_password=Fender2000
+        galera_mysql_user=drupal
+        galera_mysql_password=Fender2000
+        galera_mysql_root_password=Fender2000
+        galera_mysql_database=drupaldb
+
+        galera_cluster_backup_user=root
+
+        [template_target]
+        localhost
+
 ### 3 or 5 Node Galera
 
 > In the examples below simply replace 3 with 5 in the manifest names if you wish to deploy a 5 node cluster.
@@ -52,9 +147,15 @@ If the namespace is other then __default__ and does not already exist:
 
 From within the 3-node galera cluster folder, apply the configurations in order:
 
+##### PKS
+
+    kubectl apply -f galera-3-vsphere-volumes.yml
+
+##### CoreOS
+
     kubectl apply -f galera-3-volumes.yml
 
-This will setup the persistent volumes to the iSCSI LUNs.
+This will setup the persistent volumes for the galera nodes.
 
 #### Step 2 - Launch the Seed Instance
 
@@ -99,15 +200,25 @@ You can then enable and disable external access to the cluster (for data loading
 
 #### Enable/Disable External Access
 
+##### PKS
+
+    kubectl apply -f galera-external-lb.yml
+
+> This dedicates an NSX-T load balancer to galera and exposes 3306 on it.
+
+    mysql -h <address of nsx-t lb> -u root -p
+
+##### CoreOS
+
     kubectl apply -f galera-external-access.yml
 
-This will open up the specified __NodePort__ on all of the worker nodes.
+> This opens the specified __NodePort__ from the configuration and accepts connections.
 
     mysql -h <address of worker node> --port <node port specified> -u root -p
 
 Will give you access to the running galera cluster through the HAProxy.
 
-    kubectl delete -f galera-external-access.yml
+    kubectl delete -f galera-external-access.yml/galera-external-lb.yml
 
 Will close off external access.
 
@@ -181,7 +292,7 @@ __(cluster name)-galera-seed-volume__ should point to the target seed volume tha
 
 > The __idstudios/mariadb-galera-backup:latest__ is not tied to the original cluster for __restore__, and only requires a copy of the backups.  It can even be used against non-galera MariaDB and MySQL database backups.
 
-#### Purge Seed and Node Data Volumes
+#### Purge Seed and Node Data Volumes (CoreOS Only)
 
 The current implementation uses native Kubernetes iSCSI integration for the underlying data volumes, and NFS for the backup and scratch storage.
 
@@ -194,78 +305,6 @@ The iSCSI volumes are not easily accessed directly, so the template scripts prod
 > This requires that the volumes have already been created with:
 
     kubectl apply -f galera-3-volumes.yml
-
-## Ansible Template Based MariaDB Galera Configuration
-
-The variables tend to be self-explanatory.
-
-The following example illustrates a full 5-node galera cluster with backups.
-
-__galera.conf__:
-
-    [all:vars]
-    galera_cluster_name=tier1
-    galera_cluster_namespace=default
-    galera_cluster_docker_image=idstudios/mariadb-galera-docker:10.1
-    galera_cluster_haproxy_docker_image=idstudios/mariadb-galera-haproxy:latest
-    galera_cluster_backup_agent_image=idstudios/mariadb-galera-backup:latest
-    galera_cluster_nodeport=30306
-
-    galera_cluster_seed_iscsi_targetportal="192.168.100.40:3260"
-    galera_cluster_seed_iscsi_iqn="iqn.2018-04.io.idstudios:server.target0"
-    galera_cluster_seed_iscsi_lun=1
-
-    galera_cluster_volume_size=50Gi
-    galera_cluster_backup_volume_size=50Gi
-    galera_cluster_backup_log_volume_size=50Gi
-    galera_cluster_backup_nfs_server=192.168.100.40
-    galera_cluster_backup_path="/data/shared/backups"
-    galera_cluster_backup_log_nfs_server=192.168.100.40
-    galera_cluster_backup_log_path="/data/shared/logs"
-    galera_cluster_backup_retention_days=7
-
-    galera_cluster_node1_iscsi_targetportal="192.168.100.40:3260"
-    galera_cluster_node1_iscsi_iqn="iqn.2018-04.io.idstudios:server.galera"
-    galera_cluster_node1_iscsi_lun=1
-
-    galera_cluster_node2_iscsi_targetportal="192.168.100.40:3260"
-    galera_cluster_node2_iscsi_iqn="iqn.2018-04.io.idstudios:server.galera"
-    galera_cluster_node2_iscsi_lun=2
-
-    galera_cluster_node3_iscsi_targetportal="192.168.100.40:3260"
-    galera_cluster_node3_iscsi_iqn="iqn.2018-04.io.idstudios:server.galera"
-    galera_cluster_node3_iscsi_lun=3
-
-    galera_cluster_node4_iscsi_targetportal="192.168.100.40:3260"
-    galera_cluster_node4_iscsi_iqn="iqn.2018-04.io.idstudios:server.galera"
-    galera_cluster_node4_iscsi_lun=4
-
-    galera_cluster_node5_iscsi_targetportal="192.168.100.40:3260"
-    galera_cluster_node5_iscsi_iqn="iqn.2018-04.io.idstudios:server.galera"
-    galera_cluster_node5_iscsi_lun=5
-
-    galera_xtrabackup_password=Fender2000
-    galera_mysql_user=drupal
-    galera_mysql_password=Fender2000
-    galera_mysql_root_password=Fender2000
-    galera_mysql_database=drupaldb
-
-    galera_cluster_backup_user=root
-
-    [template_target]
-    localhost
-
-> Review the output Kubernetes manifests and the source [templates](templates) for insight into the variables and their effect.  Also, for deeper insight, review the shim scripts used in the various underlying container images:
-
-mariadb-galera-docker [start.sh](../images/mariadb-galera-docker/start.sh)
-
-mariadb-galera-docker [mysqld.sh](../images/mariadb-galera-docker/mysqld.sh)
-
-mariadb-galera-backup [start.sh](../images/mariadb-galera-backup/start.sh)
-
-mariadb-galera-backup [percona-backup.sh](../images/mariadb-galera-backup/percona-backup.sh)
-
-mariadb-galera-backup [percona-restore.sh](../images/mariadb-galera-backup/percona-restore.sh)
 
 ## MariaDB Galera Helm Chart
 
