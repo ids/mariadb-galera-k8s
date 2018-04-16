@@ -21,9 +21,9 @@ The templates generate two sets of configuration files:
 * 3-node
 * 5-node
 
-In the __clusters__ folder create a sub-folder that matches the name of the prefix for the galera cluster name (see the example in the __tier1-example__ folder), or copy the __tier1-example__ folder and rename it.
+In the __clusters__ folder create a sub-folder that matches the name of the prefix for the galera cluster name (see the examples in the __coreos-example__ and __pks-example__ folders respectively), and copy the relevant __***-example__ folder and rename it.
 
-Add or adjust the ansible configuration file with the specifics to your environment, see the __galera.conf__ file in the __tier1-example__ example.
+Add or adjust the ansible configuration file with the specifics to your environment, see the __galera.conf__ file in respective example folder.
 
 Run the ansible playbook to generate the Kubernetes YAML deployment manifests:
 
@@ -33,12 +33,12 @@ This will create a set of output manifest files in the __my-cluster__ folder tha
 
 There is also two variants of deployment:
 
-* Without Backup Agent
-* With Integrated NFS Backup Agent
+* __Without__ Integrated Backup Agent
+* __With__ Integrated NFS Backup Agent
 
 ## VMware PKS
 
-For VMware PKS it is important to make sure you have defined the storage class.  The examples use __vmware-thin__ (available in the __etc__ folder), but this can be adjusted in the configuration file.
+For VMware PKS it is important to make sure you have defined the storage class as it uses the vSphere volume storage driver for docker for the persistent volumes.  The examples use the __vmware-thin__ storage class (available in the __etc__ folder), but this can be adjusted in the configuration file.
 
 __Important__ that the VMware storage driver is __NOT__ marked as default as it doesn't handle NFS and iSCSI intrinsic volumes properly.  Run the following command to __unset__ the vSphere storage driver as the default:
 
