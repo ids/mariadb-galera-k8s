@@ -64,8 +64,6 @@ The following is an example VMware PKS __galera.conf__ file:
     galera_cluster_backup_volume_size=10Gi
     galera_cluster_backup_nfs_server=192.168.1.107
     galera_cluster_backup_path="/idstudios-files-galera-backups"
-    galera_cluster_backup_temp_nfs_server=192.168.1.107
-    galera_cluster_backup_temp_path="/idstudios-files-general"
     galera_cluster_backup_retention_days=3
     galera_cluster_backup_incremental_interval="60m"
 
