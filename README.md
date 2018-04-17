@@ -104,8 +104,6 @@ This configuration uses iSCSI direct access for the persistent data volumes.  It
     galera_cluster_backup_log_volume_size=50Gi
     galera_cluster_backup_nfs_server=192.168.100.40
     galera_cluster_backup_path="/data/shared/backups"
-    galera_cluster_backup_temp_nfs_server=192.168.1.107
-    galera_cluster_backup_temp_path="/idstudios-files-general"
     galera_cluster_backup_retention_days=7
 
     galera_cluster_node1_iscsi_targetportal="192.168.100.40:3260"
