@@ -94,6 +94,8 @@ spec:
     storage: {{ galera_cluster_backup_volume_size }}
   accessModes:
     - ReadWriteMany
+  mountOptions:
+    - vers=3,nolock
   nfs:
     server: "{{ galera_cluster_backup_nfs_server }}"
     path: "{{ galera_cluster_backup_path }}"

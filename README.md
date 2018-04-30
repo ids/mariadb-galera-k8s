@@ -21,9 +21,9 @@ The templates generate two sets of configuration files:
 * 3-node
 * 5-node
 
-In the __clusters__ folder create a sub-folder and give it a name that matches what you would like as the distinguishing prefix for your cluster (Eg. tier1, core, pks)
+In the __clusters__ folder create a sub-folder and give it a name that matches what you would like as the distinguishing prefix for your cluster (Eg. tier1, core, pks).
 
-Add or adjust the ansible configuration file with the specifics to your environment, see the __galera.conf__ file in respective example folder.  The cluster name should match the folder name you created.
+Add or adjust the ansible configuration file with the specifics to your environment, see the __galera.conf__ file in the respective example folder.  The cluster name should match the folder name you created.
 
 Run the ansible playbook to generate the Kubernetes YAML deployment manifests:
 
