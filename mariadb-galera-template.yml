@@ -65,7 +65,7 @@
     ignore_errors: true
     when: 'galera_cluster_node4_iscsi_targetportal is defined'
 
-  - name: Generate the 3-Node iSCSI based galera volumes manifest
+  - name: Generate the 3-Node static iSCSI based galera volumes manifest
     local_action:
       module: template
       src: templates/3-node/galera-3-volumes.j2
@@ -73,7 +73,7 @@
       mode: 0766
     run_once: true
     become: false
-    when: galera_vsphere_storage_class is undefined and galera_iscsi_storage_class is defined 
+    when: galera_cluster_seed_iscsi_targetportal is defined
 
   - name: Generate the 3-Node Dynamic iSCSI Targetd based galera volumes manifest
     local_action:
@@ -85,7 +85,7 @@
     become: false
     when: galera_iscsi_storage_class is defined 
 
-  - name: Generate the 3-Node vSphere based galera volumes manifest
+  - name: Generate the 3-Node vSphere Targetd based galera volumes manifest
     local_action:
       module: template
       src: templates/3-node/galera-3-vsphere-volumes.j2
