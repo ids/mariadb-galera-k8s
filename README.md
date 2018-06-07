@@ -85,7 +85,11 @@ The following is an example VMware PKS __galera.conf__ file:
 
 This configuration uses iSCSI direct access for the persistent data volumes.  It requires access to an iSCSI target that contains at least 4 luns: 1 for the initial seed volume which will be discarded, and 3 or 5 nodes for the permanent node volumes.
 
-### CoreOS Configuration File Example
+> The most current configuration uses the __Targetd Storage Appliance__ and can be deployed with a minor change to the volumes yaml manifest.  To use this approach, ensure that you specify the `galera_iscsi_storage_class` in the `galera.conf` file, and it will generate a manifest to use dynamic iSCSI provisioning as `galera-3-volumes-targetd.yml`.
+
+### CoreOS Configuration File Example for AWS Storage Gateway or Static iSCSI
+
+> Note that in this configuration you must specify the iSCSI targets and LUNs explicitly.
 
     [all:vars]
     galera_cluster_name=tier1
@@ -128,6 +132,38 @@ This configuration uses iSCSI direct access for the persistent data volumes.  It
 
     [template_target]
     localhost
+
+### CoreOS Configuration File Example for Targetd and the iscsi-provisioner
+
+> Note that in this configuration you only need to reference the storage class deployed as part of the __Targetd Storage Appliance__.
+
+    [all:vars]
+    galera_cluster_name=core
+    galera_cluster_namespace=web
+    galera_cluster_docker_image=idstudios/mariadb-galera:10.3
+    galera_cluster_haproxy_docker_image=idstudios/mariadb-galera-haproxy:latest
+    galera_cluster_backup_agent_image=idstudios/xtrabackup-agent:latest
+    galera_cluster_nodeport=31306
+
+    galera_iscsi_storage_class=iscsi-targetd-vg-targetd
+
+    galera_cluster_volume_size=3Gi
+    galera_cluster_backup_volume_size=3Gi
+    galera_cluster_backup_nfs_server=192.168.1.107
+    galera_cluster_backup_path="/idstudios-files-galera-backups"
+    galera_cluster_backup_retention_days=3
+    galera_cluster_backup_incremental_interval="60m"
+
+    galera_xtrabackup_password=Fender2000
+    galera_mysql_user=drupal
+    galera_mysql_password=Fender2000
+    galera_mysql_root_password=Fender2000
+    galera_mysql_database=drupaldb
+    galera_cluster_backup_user=root
+
+    [template_target]
+    localhost
+
 
 ### 3 or 5 Node Galera
 
