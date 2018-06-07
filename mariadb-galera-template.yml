@@ -73,7 +73,7 @@
       mode: 0766
     run_once: true
     become: false
-    when: galera_vsphere_storage_class is undefined 
+    when: galera_vsphere_storage_class is undefined and galera_iscsi_storage_class is defined 
 
   - name: Generate the 3-Node Dynamic iSCSI Targetd based galera volumes manifest
     local_action:
@@ -83,7 +83,7 @@
       mode: 0766
     run_once: true
     become: false
-    when: galera_vsphere_storage_class is undefined 
+    when: galera_iscsi_storage_class is defined 
 
   - name: Generate the 3-Node vSphere based galera volumes manifest
     local_action:
